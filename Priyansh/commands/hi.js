@@ -1,99 +1,89 @@
 module.exports.config = {
-  name: "hi",
-  version: "1.0.0",
-  hasPermssion: 0,
-  credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
-  description: "hi sticker",
-  commandCategory: "QTV BOX",
-  usages: "[text]",
-  cooldowns: 5
-}
-
-module.exports.handleEvent = async ({ event, api, Users }) => {
-  let KEY = [ 
-    "hello",
-    "hi",
-    "hai",
-    "chào",
-    "chao",
-    "hí",
-    "híí",
-    "hì",
-    "hìì",
-    "lô",
-    "hii",
-    "helo",
-    "hê nhô"
-  ];
-  let thread = global.data.threadData.get(event.threadID) || {};
-  if (typeof thread["hi"] == "undefined", thread["hi"] == false) return
-  else {
-  if (KEY.includes(event.body.toLowerCase()) !== false) {
-    let data = [
-      "526214684778630",
-      "526220108111421",
-      "526220308111401",
-      "526220484778050",
-      "526220691444696",
-      "526220814778017",
-      "526220978111334",
-      "526221104777988",
-      "526221318111300",
-      "526221564777942",
-      "526221711444594",
-      "526221971444568",
-     "2041011389459668", "2041011569459650", "2041011726126301", "2041011836126290", "2041011952792945", "2041012109459596", "2041012262792914", "2041012406126233", "2041012539459553", "2041012692792871", "2041014432792697", "2041014739459333", "2041015016125972", "2041015182792622", "2041015329459274", "2041015422792598", "2041015576125916", "2041017422792398", "2041020049458802", "2041020599458747", "2041021119458695", "2041021609458646", "2041022029458604", "2041022286125245"
-    ];
-    let sticker = data[Math.floor(Math.random() * data.length)];
-    let moment = require("moment-timezone");
-    let hours = moment.tz('Asia/Manila').format('HHmm');
-    let session = (
-    hours > 0001 && hours <= 400 ? "bright morning" : 
-    hours > 401 && hours <= 700 ? "morning" :
-    hours > 701 && hours <= 1000 ? "shining" :
-    hours > 1001 && hours <= 1200 ? "lunch" : 
-    hours > 1201 && hours <= 1700 ? "afternoon" : 
-    hours > 1701 && hours <= 1800 ? "gloaming" : 
-    hours > 1801 && hours <= 2100 ? "evening" : 
-    hours > 2101 && hours <= 2400 ? "late night" : 
-    "error");
-    let name = await Users.getNameUser(event.senderID);
-    let mentions = [];
-    mentions.push({
-      tag: name,
-      id: event.senderID
-    })
-    let msg = {body: `Hi ${name}, have a good ${session}`, mentions}
-    api.sendMessage(msg, event.threadID, (e, info) => {
-      setTimeout(() => {
-        api.sendMessage({sticker: sticker}, event.threadID);
-      }, 100)
-    }, event.messageID)
-  }
-  }
-}
+	name: "help2",
+	version: "1.0.2",
+	hasPermssion: 0,
+	credits: "PetterSever",
+	description: "Beginner's Guide To All Bot Commands",
+	commandCategory: "System",
+	usages: "[ listbox ]",
+	cooldowns: 7,
+	envConfig: {
+		autoUnsend: true,
+		delayUnsend: 500
+	}
+};
 
 module.exports.languages = {
-  "vi": {
-    "on": "Bật",
-    "off": "Tắt",
-		"successText": `${this.config.name} thành công`,
-	},
+	//"vi": {
+	//	"moduleInfo": "「 %1 」\n%2\n\n❯ Cách sử dụng: %3\n❯ Thuộc nhóm: %4\n❯ Thời gian chờ: %5 giây(s)\n❯ Quyền hạn: %6\n\n» Module code by %7 «",
+	//	"helpList": '[ Hiện tại đang có %1 lệnh có thể sử dụng trên bot này, Sử dụng: "%2help nameCommand" để xem chi tiết cách sử dụng! ]"',
+	//	"user": "Người dùng",
+  //      "adminGroup": "Quản trị viên nhóm",
+  //      "adminBot": "Quản trị viên bot"
+//	},
 	"en": {
-		"on": "on",
-		"off": "off",
-		"successText": "success!",
+		"moduleInfo": "「 %1 」\n%2\n\n❯ Usage: %3\n❯ Category: %4\n❯ Waiting time: %5 seconds(s)\n❯ Permission: %6\n\n» Module code by %7 «",
+		"helpList": '[ There are %1 commands on this bot, Use: "%2help nameCommand" to know how to use! ]',
+		"user": "User",
+        "adminGroup": "Admin group",
+        "adminBot": "Admin bot"
 	}
+};
+
+module.exports.handleEvent = function ({ api, event, getText }) {
+	const { commands } = global.client;
+	const { threadID, messageID, body } = event;
+
+	if (!body || typeof body == "undefined" || body.indexOf("help") != 0) return;
+	const splitBody = body.slice(body.indexOf("help")).trim().split(/\s+/);
+	if (splitBody.length == 1 || !commands.has(splitBody[1].toLowerCase())) return;
+	const threadSetting = global.data.threadData.get(parseInt(threadID)) || {};
+	const command = commands.get(splitBody[1].toLowerCase());
+	const prefix = (threadSetting.hasOwnProperty("PREFIX")) ? threadSetting.PREFIX : global.config.PREFIX;
+	return api.sendMessage(getText("moduleInfo", command.config.name, command.config.description, `${prefix}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, command.config.commandCategory, command.config.cooldowns, ((command.config.hasPermssion == 0) ? getText("user") : (command.config.hasPermssion == 1) ? getText("adminGroup") : getText("adminBot")), command.config.credits), threadID, messageID);
 }
 
-module.exports.run = async ({ event, api, Threads, getText }) => {
-  let { threadID, messageID } = event;
-  let data = (await Threads.getData(threadID)).data;
-	if (typeof data["hi"] == "undefined" || data["hi"] == true) data["hi"] = false;
-	else data["hi"] = true;
-	await Threads.setData(threadID, {
-		data
-	});
-	global.data.threadData.set(threadID, data);
-	return api.sendMessage(`${(data["hi"] == false) ? getText("off") : getText("on")} ${getText("successText")}`, threadID, messageID);
-}
+module.exports. run = function({ api, event, args, getText }) {
+	const { commands } = global.client;
+	const { threadID, messageID } = event;
+	const command = commands.get((args[0] || "").toLowerCase());
+	const threadSetting = global.data.threadData.get(parseInt(threadID)) || {};
+	const { autoUnsend, delayUnsend } = global.configModule[this.config.name];
+	const prefix = (threadSetting.hasOwnProperty("PREFIX")) ? threadSetting.PREFIX : global.config.PREFIX;
+
+	if (!command) {
+		const arrayInfo = [];
+		const page = parseInt(args[0]) || 1;
+    const numberOfOnePage = 9999;
+    //*số thứ tự 1 2 3.....cú pháp ${++i}*//
+    let i = 0;
+    let msg = "";
+    
+    for (var [name, value] of (commands)) {
+      name += `🍒`;
+      arrayInfo.push(name);
+    }
+
+    arrayInfo.sort((a, b) => a.data - b.data);
+    
+    const startSlice = numberOfOnePage*page - numberOfOnePage;
+    i = startSlice;
+    const returnArray = arrayInfo.slice(startSlice, startSlice + numberOfOnePage);
+    
+    for (let item of returnArray) msg += `『 ${++i} 』${prefix}${item}\n`;
+    
+    
+    const siu = `╔━━❖❖💠❖❖━━╗\n  𝐀𝐥𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝 𝐋𝐢𝐬𝐭\n╚━━❖❖💠❖❖━━╝`;
+    
+ const text = `\nPage (${page}/${Math.ceil(arrayInfo.length/numberOfOnePage)})`;
+ 
+    return api.sendMessage(siu + "\n\n" + msg  + text, threadID, async (error, info) => {
+			if (autoUnsend) {
+				await new Promise(resolve => setTimeout(resolve, delayUnsend * 1000));
+				return api.unsendMessage(info.messageID);
+			} else return;
+		}, event.messageID);
+	}
+
+	return api.sendMessage(getText("moduleInfo", command.config.name, command.config.description, `${prefix}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, command.config.commandCategory, command.config.cooldowns, ((command.config.hasPermssion == 0) ? getText("user") : (command.config.hasPermssion == 1) ? getText("adminGroup") : getText("adminBot")), command.config.credits), threadID, messageID);
+};
